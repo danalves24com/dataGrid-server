@@ -81,6 +81,7 @@ app.post("/node/interact/:nodeName/:path/:data", (req, res)=>{
 
 app.post("/grid/assign/process/", (req, res) => {
     var nodeI = 0
+    var busy = 0
     for (var node in nodes) {
         if(nodes[node][1] == "proc") {
             nodes[node][1]=req.body.proc
@@ -88,9 +89,13 @@ app.post("/grid/assign/process/", (req, res) => {
             res.send("https://dea161d6fd5f.ngrok.io/grid/"+nodes[node][0]+"/procRes")
             break;
         }
+        else {
+            busy+=1
+        }
     }
-    res.send("No empty nodes")
-
+    if(busy = nodes.length) {
+        res.send("all nodes busy")
+    }
 })
 
 app.get("/grid/:nodeName/procRes", (req, res)=> {
