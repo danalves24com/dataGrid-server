@@ -101,7 +101,9 @@ app.post("/grid/assign/process/", (req, res) => {
 app.get("/grid/:nodeName/procRes", (req, res)=> {
     for(var node in nodes) {
         if (nodes[node][0] == req.params.nodeName){
-            res.send(nodes[node][3])
+            var resultToSend = nodes[node][3]
+            nodes[node][3] = "procRes"
+            res.send()
         }
     }
 })
