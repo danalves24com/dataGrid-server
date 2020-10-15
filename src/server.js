@@ -51,10 +51,10 @@ var nodeInitApi = {
 var nodeInteractApi = {
     "complete-task": (req, res)=>{
         for(var node in nodes) {
-            if (nodes[node][0] == req.params.nodeName) {
-                nodes[node][1] = "proc"                
+            if (nodes[node][0] == req.params.nodeName) {                        
                 console.log(req.params.data)
                 nodes[node][3] = req.params.data;
+                nodes[node][1] = "proc"
                 res.send("task noted: "+ req.params.data)
             }
         }
@@ -63,6 +63,16 @@ var nodeInteractApi = {
 
 app.get("/node/init/:nodeName/:path", (req, res) => {
     nodeInitApi[req.params.path](req, res)    
+})
+
+app.get("/grid/get/nodes", (req, res)=>{
+    var livingNodes = 0
+    for(var node in nodes) {
+         if(nodes[node][0] != "DEAD") {
+            livingNodes+=1
+         } 
+    }
+    res.send({"node": livingNodes})
 })
 
 app.post("/node/interact/:nodeName/:path/:data", (req, res)=>{
@@ -75,7 +85,7 @@ app.post("/grid/assign/process/", (req, res) => {
         if(nodes[node][1] == "proc") {
             nodes[node][1]=req.body.proc
             nodeI = node
-            res.send("http://localhost:8000/grid/"+nodes[node][0]+"/procRes")
+            res.send("https://dea161d6fd5f.ngrok.io/grid/"+nodes[node][0]+"/procRes")
             break;
         }
     }
