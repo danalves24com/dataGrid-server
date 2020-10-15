@@ -1,12 +1,12 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const path = require('path')
-
+const cors = require('cors');
 const app = express();
 
 //app.use(express.static(path.join(__dirname, '/build'))) //to host a build website
 app.use(bodyParser.json()) // to process params
-
+app.use(cors())
 app.get("/stat", (req, res) => {
     res.status(200).send(`server is running`)
 })
@@ -76,6 +76,7 @@ app.post("/grid/assign/process/", (req, res) => {
             nodes[node][1]=req.body.proc
             nodeI = node
             res.send("http://localhost:8000/grid/"+nodes[node][0]+"/procRes")
+            break;
         }
     }
 
