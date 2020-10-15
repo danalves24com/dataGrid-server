@@ -72,7 +72,7 @@ app.get("/grid/get/nodes", (req, res)=>{
             livingNodes+=1
          } 
     }
-    res.send({"node": livingNodes})
+    res.send({"node": livingNodes, "values": nodes})
 })
 
 app.post("/node/interact/:nodeName/:path/:data", (req, res)=>{
@@ -89,6 +89,7 @@ app.post("/grid/assign/process/", (req, res) => {
             break;
         }
     }
+    res.send("No empty nodes")
 
 })
 
