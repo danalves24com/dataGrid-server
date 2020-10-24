@@ -107,7 +107,7 @@ app.post("/grid/assign/process/", (req, res) => {
         if(nodes[node][1] == "proc" && nodes[node][3] == "procRes" && Date.now() - nodes[node][5] <= 10000 && nodes[node][6]<=8) {
             nodes[node][1]=req.body.proc
             nodeI = node
-            res.send("https://dea161d6fd5f.ngrok.io/grid/"+nodes[node][0]+"/procRes")
+            res.send("https://5c369472be53.ngrok.io/grid/"+nodes[node][0]+"/procRes")
             break;
         }
         else {
