@@ -14,35 +14,55 @@ app.get("/stat", (req, res) => {
 var nodes = []
 
 
-
+app.post("/test/post", (req, res)=>{
+    res.send(req.body);
+    console.log(req.body.data)
+    console.log(req.params)
+})
 
 var nodeInitApi = {
     "create": (req, res) => {
-        nodes.push([req.params.nodeName, "proc", "stor", "procRes", "storRes"]);
-        console.log(nodes)
+        nodes.push([req.params.nodeName, "proc", "stor", "procRes", "storRes", Date.now(), 0]);    
         res.send("node created");
     },    
     "terminate": (req, res)=>{
         for(var node in nodes) {
             if (nodes[node][0] == req.params.nodeName) {
-                nodes[node] = ["DEAD"]
-                console.log(nodes)
+                nodes[node] = ["DEAD"]                
                 res.send(`node ${req.params.node} is terminated`)
                 
             }
 
+        }
+        for(var node in nodes) {
+            if(Date.now()-nodes[node][5] >= 20000) {
+                if(nodes[node][1] != "proc") {
+                    nodes[node][3] == "ERR24#Failed to execute: " + nodes[node][1]
+                }
+                else {
+                    nodes.splice(node, 1);
+                }                
+            }
+            else if(nodes[node][0] == "DEAD"){
+                nodes.splice(node, 1);
+            }
         }
     },
     "check-for-process": (req, res) => {
         for(var node in nodes) {
             if (nodes[node][0] == req.params.nodeName) {
                 node = nodes[node]
+                node[5] = Date.now()   
+                node[6]+=1             
                 if(node[1]!="proc") {
                     res.send(node[1])
+                    node[1] = "processTaken"
+                    
                 }
                 else {
                     res.send("empty")
                 }
+                //5
             }
         }
     }
@@ -52,10 +72,10 @@ var nodeInteractApi = {
     "complete-task": (req, res)=>{
         for(var node in nodes) {
             if (nodes[node][0] == req.params.nodeName) {                        
-                console.log(req.params.data)
-                nodes[node][3] = req.params.data;
+                console.log(req.body.data)
+                nodes[node][3] = req.body.data;
                 nodes[node][1] = "proc"
-                res.send("task noted: "+ req.params.data)
+                res.send("task noted: "+ req.body.data)
             }
         }
     }
@@ -75,7 +95,7 @@ app.get("/grid/get/nodes", (req, res)=>{
     res.send({"node": livingNodes, "values": nodes})
 })
 
-app.post("/node/interact/:nodeName/:path/:data", (req, res)=>{
+app.post("/node/interact/:nodeName/:path/", (req, res)=>{
     nodeInteractApi[req.params.path](req, res)
 })
 
@@ -83,27 +103,31 @@ app.post("/grid/assign/process/", (req, res) => {
     var nodeI = 0
     var busy = 0
     for (var node in nodes) {
-        if(nodes[node][1] == "proc") {
+        console.log(Date.now() - nodes[node][5])
+        if(nodes[node][1] == "proc" && nodes[node][3] == "procRes" && Date.now() - nodes[node][5] <= 10000 && nodes[node][6]<=8) {
             nodes[node][1]=req.body.proc
             nodeI = node
-            res.send("https://dea161d6fd5f.ngrok.io/grid/"+nodes[node][0]+"/procRes")
+            res.send("http://localhost:8000/grid/"+nodes[node][0]+"/procRes")
             break;
         }
         else {
             busy+=1
         }
     }
-    if(busy = nodes.length) {
-        res.send("all nodes busy")
+    if(busy == nodes.length) {
+        res.send("anbs")
     }
 })
 
 app.get("/grid/:nodeName/procRes", (req, res)=> {
     for(var node in nodes) {
         if (nodes[node][0] == req.params.nodeName){
-            var resultToSend = nodes[node][3]+""
-            nodes[node][3] = "procRes"
+            var resultToSend = nodes[node][3]+"."            
             res.send(resultToSend)
+            nodes[node][3] = "procRes"
+            if(nodes[node][3].split("#") == "ERR24") {
+                nodes.splice(node, 1);
+            }
         }
     }
 })
